@@ -49,6 +49,10 @@ if(FLEX_EXECUTABLE)
 	)
 
 	target_link_libraries(QScript.QCompile.App PRIVATE QScript.QCompile)
+
+	# Install QCompile
+	install(TARGETS QScript.QCompile DESTINATION lib)
+	install(TARGETS QScript.QCompile.App DESTINATION bin)
 endif()
 
 # Compile QDecompile library
@@ -69,3 +73,7 @@ add_executable(QScript.QDecompile.App
 )
 
 target_link_libraries(QScript.QDecompile.App PRIVATE QScript.QDecompile)
+
+# Install QDecompile
+install(TARGETS QScript.QDecompile DESTINATION lib)
+install(TARGETS QScript.QDecompile.App DESTINATION bin)
