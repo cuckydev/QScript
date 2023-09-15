@@ -1,0 +1,7 @@
+# IDE files
+.vs
+.vscode
+
+# CMake files
+out
+build
