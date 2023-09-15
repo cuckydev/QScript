@@ -23,7 +23,7 @@ namespace QScript
 		// Process tokens
 		std::vector<unsigned char> bytecode;
 
-		auto add_token = [&bytecode](QScript::Token token)
+		auto add_token = [&bytecode](Token token)
 			{
 				bytecode.push_back((unsigned char)token);
 			};
@@ -77,16 +77,16 @@ namespace QScript
 			{
 				switch (token.type)
 				{
-					case QScript::Token::Integer:
-					case QScript::Token::HexInteger:
+					case Token::Integer:
+					case Token::HexInteger:
 					{
-						const auto &integer = (const QScript::TokenNumber &)token;
+						const auto &integer = (const TokenNumber &)token;
 						return integer.value;
 						break;
 					}
-					case QScript::Token::Float:
+					case Token::Float:
 					{
-						const auto &real = (const QScript::TokenReal &)token;
+						const auto &real = (const TokenReal &)token;
 						return (signed long)std::floor(real.value);
 						break;
 					}
@@ -99,16 +99,16 @@ namespace QScript
 			{
 				switch (token.type)
 				{
-					case QScript::Token::Integer:
-					case QScript::Token::HexInteger:
+					case Token::Integer:
+					case Token::HexInteger:
 					{
-						const auto &integer = (const QScript::TokenNumber &)token;
+						const auto &integer = (const TokenNumber &)token;
 						return (float)integer.value;
 						break;
 					}
-					case QScript::Token::Float:
+					case Token::Float:
 					{
-						const auto &real = (const QScript::TokenReal &)token;
+						const auto &real = (const TokenReal &)token;
 						return real.value;
 						break;
 					}
@@ -117,7 +117,7 @@ namespace QScript
 				}
 			};
 
-		std::unordered_map<std::string, unsigned long> checksums;
+		std::unordered_map<unsigned long, std::string> checksums;
 
 		std::unordered_map<std::string, unsigned long> labels;
 		std::vector<std::pair<unsigned long, std::string>> label_refs;
@@ -164,43 +164,69 @@ namespace QScript
 
 			switch (token->type)
 			{
-				case QScript::Token::Name:
-				case QScript::Token::Arg:
+				case Token::Name:
+				case Token::Arg:
 				{
-					const auto &str = (const QScript::TokenString &)*token;
-					unsigned long crc = QScript::CRC(str.value.c_str());
-					checksums[str.value] = crc;
+					// Get checksum of string
+					const auto &str = (const TokenString&)*token;
+					unsigned long crc = CRC(str.value.c_str());
 
-					if (token->type == QScript::Token::Arg)
-						add_token(QScript::Token::Arg);
-					add_token(QScript::Token::Name);
+					// Remember checksum name
+					auto find = checksums.find(crc);
+					if (find != checksums.end())
+					{
+						// Check if there's a collision
+						if (SimpleString(find->second) != SimpleString(str.value))
+							throw std::runtime_error("Checksum collision (" + find->second + " == " + str.value + ")");
+					}
+					else
+					{
+						// Set checksum
+						checksums[crc] = str.value;
+					}
+
+					if (token->type == Token::Arg)
+						add_token(Token::Arg);
+					add_token(Token::Name);
 					add_int(crc);
 					break;
 				}
-				case QScript::Token::String:
-				case QScript::Token::LocalString:
+				case Token::NameChecksum:
+				case Token::ArgChecksum:
 				{
-					const auto &str = (const QScript::TokenString &)*token;
+					// Get checksum of string
+					const auto &integer = (const TokenNumber &)*token;
+
+					if (token->type == Token::ArgChecksum)
+						add_token(Token::Arg);
+					add_token(Token::Name);
+					add_int(integer.value);
+					break;
+				}
+				case Token::String:
+				case Token::LocalString:
+				{
+					const auto &str = (const TokenString &)*token;
 					add_token(token->type);
 					add_string_sized(str.value);
 					break;
 				}
-				case QScript::Token::Integer:
-				case QScript::Token::HexInteger:
+				case Token::Integer:
+				case Token::HexInteger:
 				{
-					const auto &integer = (const QScript::TokenNumber &)*token;
+					const auto &integer = (const TokenNumber &)*token;
 					add_token(token->type);
 					add_int(integer.value);
 					break;
 				}
-				case QScript::Token::Float:
+				case Token::Float:
 				{
-					const auto &real = (const QScript::TokenReal &)*token;
+					const auto &real = (const TokenReal &)*token;
 					add_token(token->type);
 					add_real(real.value);
 					break;
 				}
-				case QScript::Token::Pair:
+				case Token::Pair:
 				{
 					const auto &token_lp = token_pop();
 					const auto &token_x = token_pop();
@@ -208,19 +234,19 @@ namespace QScript
 					const auto &token_y = token_pop();
 					const auto &token_rp = token_pop();
 
-					if (token_lp->type != QScript::Token::OpenParenth)
+					if (token_lp->type != Token::OpenParenth)
 						throw std::runtime_error("Expected '('");
-					if (token_comma->type != QScript::Token::Comma)
+					if (token_comma->type != Token::Comma)
 						throw std::runtime_error("Expected ','");
-					if (token_rp->type != QScript::Token::CloseParenth)
+					if (token_rp->type != Token::CloseParenth)
 						throw std::runtime_error("Expected ')'");
 
-					add_token(QScript::Token::Pair);
+					add_token(Token::Pair);
 					add_real(get_token_real(*token_x));
 					add_real(get_token_real(*token_y));
 					break;
 				}
-				case QScript::Token::Vector:
+				case Token::Vector:
 				{
 					const auto &token_lp = token_pop();
 					const auto &token_x = token_pop();
@@ -230,42 +256,42 @@ namespace QScript
 					const auto &token_z = token_pop();
 					const auto &token_rp = token_pop();
 
-					if (token_lp->type != QScript::Token::OpenParenth)
+					if (token_lp->type != Token::OpenParenth)
 						throw std::runtime_error("Expected '('");
-					if (token_comma_x->type != QScript::Token::Comma)
+					if (token_comma_x->type != Token::Comma)
 						throw std::runtime_error("Expected ','");
-					if (token_comma_y->type != QScript::Token::Comma)
+					if (token_comma_y->type != Token::Comma)
 						throw std::runtime_error("Expected ','");
-					if (token_rp->type != QScript::Token::CloseParenth)
+					if (token_rp->type != Token::CloseParenth)
 						throw std::runtime_error("Expected ')'");
 
-					add_token(QScript::Token::Vector);
+					add_token(Token::Vector);
 					add_real(get_token_real(*token_x));
 					add_real(get_token_real(*token_y));
 					add_real(get_token_real(*token_z));
 					break;
 				}
-				case QScript::Token::EndOfLine:
+				case Token::EndOfLine:
 				{
 					// Don't add multiple end of lines in a row
-					add_token(QScript::Token::EndOfLine);
+					add_token(Token::EndOfLine);
 					while (token_can_pop())
 					{
 						const auto &next_token = token_peek();
-						if (next_token == nullptr || next_token->type != QScript::Token::EndOfLine)
+						if (next_token == nullptr || next_token->type != Token::EndOfLine)
 							break;
 						token_pop();
 					}
 					break;
 				}
-				case QScript::Token::KeywordRandom:
-				case QScript::Token::KeywordRandom2:
-				case QScript::Token::KeywordRandomNoRepeat:
-				case QScript::Token::KeywordRandomPermute:
+				case Token::KeywordRandom:
+				case Token::KeywordRandom2:
+				case Token::KeywordRandomNoRepeat:
+				case Token::KeywordRandomPermute:
 				{
 					// Parse weight list
 					const auto &token_lp = token_pop();
-					if (token_lp->type != QScript::Token::OpenParenth)
+					if (token_lp->type != Token::OpenParenth)
 						throw std::runtime_error("Expected '('");
 
 					std::vector<signed long> weights;
@@ -273,15 +299,15 @@ namespace QScript
 					{
 						// Grab number
 						const auto &token_number = token_pop();
-						if (token_number->type == QScript::Token::CloseParenth)
+						if (token_number->type == Token::CloseParenth)
 							break;
 						weights.push_back(get_token_integer(*token_number));
 
 						// Grab comma or close parenth
 						const auto &token_next = token_pop();
-						if (token_next->type == QScript::Token::CloseParenth)
+						if (token_next->type == Token::CloseParenth)
 							break;
-						if (token_next->type != QScript::Token::Comma)
+						if (token_next->type != Token::Comma)
 							throw std::runtime_error("Expected ',' or ')'");
 					}
 
@@ -301,7 +327,7 @@ namespace QScript
 						add_int(0);
 					break;
 				}
-				case QScript::Token::KeywordRandomCase:
+				case Token::KeywordRandomCase:
 				{
 					// Get top of stack
 					if (random_stack.empty())
@@ -315,7 +341,7 @@ namespace QScript
 					if (random.jump != 0)
 					{
 						random.end_jumps.push_back(bytecode.size());
-						add_token(QScript::Token::Jump);
+						add_token(Token::Jump);
 						add_int(0);
 					}
 
@@ -325,7 +351,7 @@ namespace QScript
 					random.jump++;
 					break;
 				}
-				case QScript::Token::KeywordRandomEnd:
+				case Token::KeywordRandomEnd:
 				{
 					// Get top of stack
 					if (random_stack.empty())
@@ -353,12 +379,12 @@ namespace QScript
 
 		for (const auto &checksum : checksums)
 		{
-			add_token(QScript::Token::ChecksumName);
-			add_int(checksum.second);
-			add_string(checksum.first.c_str());
+			add_token(Token::ChecksumName);
+			add_int(checksum.first);
+			add_string(checksum.second.c_str());
 		}
 
-		add_token(QScript::Token::EndOfFile);
+		add_token(Token::EndOfFile);
 
 		g_tokens.clear();
 		return bytecode;

@@ -34,6 +34,10 @@ arg_identifier <{raw_identifier}>
 string \"([^\\\"]|\\.)*\"
 local_string \#\"([^\\\"]|\\.)*\"
 
+raw_checksum 0x{digit_hex}+
+checksum \({raw_checksum}\)
+arg_checksum <{raw_checksum}>
+
 label {raw_identifier}:
 
 /* Tokens */
@@ -58,8 +62,11 @@ label {raw_identifier}:
  /* Identifiers */
 {label} { QScript::g_tokens.emplace_back(new QScript::TokenString(QScript::Token::Label, yytext, 0, -1)); }
 
-{identifier}     { QScript::g_tokens.emplace_back(new QScript::TokenString(QScript::Token::Name, yytext, 1, -1)); }
-"()"             { QScript::g_tokens.emplace_back(new QScript::TokenString(QScript::Token::Name, "", 0, 0)); }
+{checksum}     { QScript::g_tokens.emplace_back(new QScript::TokenNumber(QScript::Token::NameChecksum, yytext + 1, 16, "0x")); }
+{arg_checksum} { QScript::g_tokens.emplace_back(new QScript::TokenNumber(QScript::Token::ArgChecksum, yytext + 1, 16, "0x")); }
+
+{identifier} { QScript::g_tokens.emplace_back(new QScript::TokenString(QScript::Token::Name, yytext, 1, -1)); }
+"()"         { QScript::g_tokens.emplace_back(new QScript::TokenString(QScript::Token::Name, "", 0, 0)); }
 
 {arg_identifier} { QScript::g_tokens.emplace_back(new QScript::TokenString(QScript::Token::Arg, yytext, 1, -1)); }
 

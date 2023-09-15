@@ -107,7 +107,23 @@ namespace QScript
 		0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d
 	};
 
-	constexpr static inline unsigned long CRC(const char *literal)
+	static inline std::string SimpleString(const std::string &str)
+	{
+		std::string out = str;
+		for (auto &i : out)
+		{
+			// Convert to lower case
+			if (i >= 'A' && i <= 'Z')
+				i = 'a' + i - 'A';
+			// Convert forward slashes to backslashes, otherwise two filenames which are
+			// effectively the same but with different slashes will give different checksums
+			if (i == '/')
+				i = '\\';
+		}
+		return out;
+	}
+
+	static inline unsigned long CRC(const char *literal)
 	{
 		unsigned long rc = 0xffffffff;
 
@@ -123,7 +139,7 @@ namespace QScript
 				ch = 'a' + ch - 'A';
 			}
 			// Convert forward slashes to backslashes, otherwise two filenames which are
-			// effectively the same but with different slashes will give different checksums.
+			// effectively the same but with different slashes will give different checksums
 			if (ch == '/')
 			{
 				ch = '\\';

@@ -140,15 +140,28 @@ namespace QScript
 				case Token::Name:
 				{
 					uint32_t checksum = GetUnsignedInteger(p_start, p_end, p_token + 1);
+					
 					if (is_arg)
 						line << "<";
 					else
 						line << "(";
-					line << checksum_strings[checksum];
+
+					auto find = checksum_strings.find(checksum);
+					if (find != checksum_strings.end())
+					{
+						line << find->second;
+					}
+					else
+					{
+						line << "0x" << std::hex << checksum << std::dec;
+						std::cout << "WARNING: Could not find name for checksum 0x" << std::hex << checksum << std::dec << std::endl;
+					}
+
 					if (is_arg)
 						line << ">";
 					else
 						line << ")";
+
 					line << " ";
 					is_arg = false;
 					break;

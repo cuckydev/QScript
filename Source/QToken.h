@@ -11,6 +11,9 @@ namespace QScript
 
 		Label = -3,
 
+		NameChecksum = -4, // Name, except we don't know the name
+		ArgChecksum = -5, // Arg, except we don't know the name
+
 		// Qb tokens
 		EndOfFile = 0,
 		EndOfLine = 1,

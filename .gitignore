@@ -5,3 +5,4 @@
 # CMake files
 out
 build
+CMakeSettings.json
