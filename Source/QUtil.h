@@ -30,7 +30,7 @@ namespace QScript
 				esc += "\\\"";
 			else if (i == '\'')
 				esc += "\\\'";
-			else if (i < 0x20 || i > 0x7E)
+			else if ((unsigned char)i < 0x20 || (unsigned char)i > 0x7E)
 				esc += "\\x" + "0123456789ABCDEF"[(i >> 4) & 0xF] + "0123456789ABCDEF"[(i >> 0) & 0xF];
 			else
 				esc += i;
