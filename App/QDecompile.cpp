@@ -4,19 +4,25 @@
 #include <fstream>
 #include <vector>
 
+#include "ArgsParse.h"
+
 int main(int argc, char *argv[])
 {
-	if (argc < 3)
-	{
-		std::cout << "usage: " << argv[0] << " <input.qb> <output.q>" << std::endl;
+	// Parse arguments
+	static const std::unordered_map<std::string, ArgsParse::ArgumentDef> args_def = {
+		{ "input", { "Input script", "", "q", {}, true}},
+		{ "output", { "Output binary", "", "qb", {}, true}},
+	};
+	std::unordered_map<std::string, std::string> args = ArgsParse::Parse(argc, argv, args_def);
+	if (args.empty())
 		return 0;
-	}
+
 	try
 	{
 		std::string out;
 		{
 			// Read in file
-			std::ifstream file(argv[1], std::ios::binary | std::ios::ate);
+			std::ifstream file(args["input"], std::ios::binary | std::ios::ate);
 			if (!file.is_open())
 			{
 				std::cerr << "Failed to open input file" << std::endl;
@@ -34,7 +40,7 @@ int main(int argc, char *argv[])
 		}
 
 		// Write out file
-		std::ofstream outFile(argv[2]);
+		std::ofstream outFile(args["output"]);
 		if (!outFile.is_open())
 		{
 			std::cerr << "Failed to open output file" << std::endl;
@@ -44,7 +50,7 @@ int main(int argc, char *argv[])
 	}
 	catch (const std::exception &e)
 	{
-		std::cerr << "QB decompilation failed: " << e.what() << std::endl;
+		std::cerr << "QScript decompilation failed: " << e.what() << std::endl;
 		return 1;
 	}
 	return 0;

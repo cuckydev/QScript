@@ -13,8 +13,29 @@
 
 namespace QScript
 {
-	std::vector<unsigned char> Compile(const std::string &source)
+	// Target properties
+	struct TargetProps
 	{
+		bool fast_if_else_case;
+	};
+
+	static const TargetProps s_target_props[] = {
+		// THUG1
+		{
+			false,
+		},
+		// THUG2
+		{
+			true,
+		},
+	};
+
+	// Compile function
+	std::vector<unsigned char> Compile(const std::string &source, Target target)
+	{
+		// Get target properties
+		const auto &target_props = s_target_props[(int)target];
+
 		// Perform lexical analysis
 		qscript_lex__scan_string(source.c_str());
 		while (qscript_lex_lex()) {}
@@ -71,6 +92,13 @@ namespace QScript
 				bytecode.at(to + 1) = (unsigned char)((relative >> 8) & 0xFF);
 				bytecode.at(to + 2) = (unsigned char)((relative >> 16) & 0xFF);
 				bytecode.at(to + 3) = (unsigned char)((relative >> 24) & 0xFF);
+			};
+
+		auto set_short_address = [&bytecode](size_t to, size_t address)
+			{
+				ptrdiff_t relative = (ptrdiff_t)address - (ptrdiff_t)(to);
+				bytecode.at(to + 0) = (unsigned char)((relative >> 0) & 0xFF);
+				bytecode.at(to + 1) = (unsigned char)((relative >> 8) & 0xFF);
 			};
 
 		auto get_token_integer = [&bytecode](const TokenBase &token) -> signed long

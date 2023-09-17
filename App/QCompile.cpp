@@ -5,19 +5,26 @@
 #include <vector>
 #include <sstream>
 
+#include "ArgsParse.h"
+
 int main(int argc, char *argv[])
 {
-	if (argc < 3)
-	{
-		std::cout << "usage: " << argv[0] << " <input.q> <output.qb>" << std::endl;
+	// Parse arguments
+	static const std::unordered_map<std::string, ArgsParse::ArgumentDef> args_def = {
+		{ "input", { "Input script", "", "q", {}, true}},
+		{ "output", { "Output binary", "", "qb", {}, true}},
+		{ "target", { "Script target", "", "", { { "thug1", "Tony Hawk's Underground" }, {"thug2", "Tony Hawk's Underground 2"} }, true}},
+	};
+	std::unordered_map<std::string, std::string> args = ArgsParse::Parse(argc, argv, args_def);
+	if (args.empty())
 		return 0;
-	}
+
 	try
 	{
 		std::vector<unsigned char> out;
 		{
 			// Read in file
-			std::ifstream file(argv[1]);
+			std::ifstream file(args["input"]);
 			if (!file.is_open())
 			{
 				std::cerr << "Failed to open input file" << std::endl;
@@ -27,12 +34,19 @@ int main(int argc, char *argv[])
 			std::stringstream buffer;
 			buffer << file.rdbuf();
 
-			// Decompile
-			out = QScript::Compile(buffer.str());
+			// Select target
+			QScript::Target target;
+			if (args["target"] == "thug1")
+				target = QScript::Target::THUG1;
+			else if (args["target"] == "thug2")
+				target = QScript::Target::THUG2;
+
+			// Compile
+			out = QScript::Compile(buffer.str(), target);
 		}
 
 		// Write out file
-		std::ofstream outFile(argv[2], std::ios::binary);
+		std::ofstream outFile(args["output"], std::ios::binary);
 		if (!outFile.is_open())
 		{
 			std::cerr << "Failed to open output file" << std::endl;
@@ -42,7 +56,7 @@ int main(int argc, char *argv[])
 	}
 	catch (const std::exception &e)
 	{
-		std::cerr << "QB compilation failed: " << e.what() << std::endl;
+		std::cerr << "QScript compilation failed: " << e.what() << std::endl;
 		return 1;
 	}
 	return 0;
