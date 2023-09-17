@@ -46,7 +46,7 @@ namespace QScript
 		// Types
 		Name = 22,
 		Integer = 23,
-		HexInteger = 24,
+		HexInteger = 24, // The parser doesn't seem to fully support this, and it doesn't appear in any qb files
 		Enum = 25,
 		Float = 26,
 		String = 27,

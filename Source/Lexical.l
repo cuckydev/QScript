@@ -52,7 +52,7 @@ label {raw_identifier}:
  /* Numbers */
 {number_dec}  { QScript::g_tokens.emplace_back(new QScript::TokenNumber(QScript::Token::Integer, yytext, 10, nullptr)); }
 {number_bin}  { QScript::g_tokens.emplace_back(new QScript::TokenNumber(QScript::Token::Integer, yytext, 2, "0b")); }
-{number_hex}  { QScript::g_tokens.emplace_back(new QScript::TokenNumber(QScript::Token::HexInteger, yytext, 16, "0x")); }
+{number_hex}  { QScript::g_tokens.emplace_back(new QScript::TokenNumber(QScript::Token::Integer, yytext, 16, "0x")); }
 {number_real} { QScript::g_tokens.emplace_back(new QScript::TokenReal(QScript::Token::Float, yytext)); }
 
  /* Strings */
