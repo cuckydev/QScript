@@ -300,6 +300,7 @@ namespace QScript
 				}
 				case Token::Jump:
 				{
+					/*
 					ptrdiff_t address = GetAddress_Relative(p_start, p_end, p_token + 1);
 
 					std::string label = labels[address];
@@ -310,6 +311,7 @@ namespace QScript
 						label.pop_back();
 
 					line << "JUMP (" << label << ") ";
+					*/
 					break;
 				}
 				case Token::KeywordRandom:
@@ -426,7 +428,7 @@ namespace QScript
 				}
 				case Token::ShortJump:
 				{
-					line << "SHORTJUMP ";
+					// line << "SHORTJUMP ";
 					break;
 				}
 				default:
