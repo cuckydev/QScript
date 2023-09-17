@@ -10,8 +10,8 @@ int main(int argc, char *argv[])
 {
 	// Parse arguments
 	static const std::unordered_map<std::string, ArgsParse::ArgumentDef> args_def = {
-		{ "input", { "Input script", "", "q", {}, true}},
-		{ "output", { "Output binary", "", "qb", {}, true}},
+		{ "input", { "Input binary", "", "qb", {}, true}},
+		{ "output", { "Output script", "", "q", {}, true}},
 	};
 	std::unordered_map<std::string, std::string> args = ArgsParse::Parse(argc, argv, args_def);
 	if (args.empty())
