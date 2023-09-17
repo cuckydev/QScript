@@ -406,6 +406,8 @@ namespace QScript
 				case Token::KeywordDefault:
 				{
 					line << "DEFAULT ";
+					tab_depth--;
+					post_tab_depth++;
 					break;
 				}
 				case Token::Colon:
@@ -417,6 +419,15 @@ namespace QScript
 				{
 					line << "IF ";
 					post_tab_depth++;
+					/*
+					ptrdiff_t address = GetShortAddress_Relative(p_start, p_end, p_token + 1);
+
+					std::string label = labels[address];
+					if (label.back() == ':')
+						label.pop_back();
+
+					line << "(" << label << ") ";
+					*/
 					break;
 				}
 				case Token::FastElse:
@@ -424,11 +435,29 @@ namespace QScript
 					line << "ELSE ";
 					tab_depth--;
 					post_tab_depth++;
+					/*
+					ptrdiff_t address = GetShortAddress_Relative(p_start, p_end, p_token + 1);
+
+					std::string label = labels[address];
+					if (label.back() == ':')
+						label.pop_back();
+
+					line << "(" << label << ") ";
+					*/
 					break;
 				}
 				case Token::ShortJump:
 				{
-					// line << "SHORTJUMP ";
+					/*
+					line << "SHORTJUMP ";
+					ptrdiff_t address = GetShortAddress_Relative(p_start, p_end, p_token + 1);
+
+					std::string label = labels[address];
+					if (label.back() == ':')
+						label.pop_back();
+
+					line << "(" << label << ") ";
+					*/
 					break;
 				}
 				default:

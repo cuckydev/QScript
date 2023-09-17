@@ -250,12 +250,13 @@ namespace QScript
 					break;
 				}
 				case Token::KeywordCase:
+				case Token::KeywordDefault:
 				{
 					if (target_props.fast_if_else_case)
 					{
 						// Get top of stack
 						if (switch_stack.empty())
-							throw std::runtime_error("Unexpected 'CASE' (no 'SWITCH')");
+							throw std::runtime_error("Unexpected 'CASE' or 'DEFAULT' (no 'SWITCH')");
 
 						auto &switch_top = switch_stack.top();
 
@@ -270,7 +271,7 @@ namespace QScript
 						switch_top.cases.push_back(bytecode.size());
 
 						// Push Case and short jump
-						add_token(Token::KeywordCase);
+						add_token(token->type);
 						add_token(Token::ShortJump);
 						add_short(0);
 						break;
@@ -278,7 +279,7 @@ namespace QScript
 					else
 					{
 						// Push Case
-						add_token(Token::KeywordCase);
+						add_token(token->type);
 					}
 					break;
 				}
