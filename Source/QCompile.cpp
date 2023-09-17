@@ -150,13 +150,25 @@ namespace QScript
 		std::unordered_map<std::string, unsigned long> labels;
 		std::vector<std::pair<unsigned long, std::string>> label_refs;
 
-		struct RandomStack
+		struct RandomStack // Keeps track of RandomCase jumps
 		{
 			size_t address = 0;
 			size_t jump = 0, num_jumps = 0;
 			std::vector<size_t> end_jumps;
 		};
 		std::stack<RandomStack> random_stack;
+
+		struct ShortStack // Keeps track of FastIf, FastElse
+		{
+			size_t address = 0;
+		};
+		std::stack<ShortStack> short_stack;
+
+		struct SwitchStack // Keeps track of Case jumps
+		{
+			std::vector<size_t> cases;
+		};
+		std::stack<SwitchStack> switch_stack;
 
 		auto &token_it = g_tokens.cbegin();
 		auto &token_end = g_tokens.cend();
@@ -184,6 +196,7 @@ namespace QScript
 			return *token_it;
 		};
 
+		// Process tokens
 		while (token_can_pop())
 		{
 			const auto &token = token_pop();
@@ -192,6 +205,146 @@ namespace QScript
 
 			switch (token->type)
 			{
+				case Token::KeywordSwitch:
+				{
+					if (target_props.fast_if_else_case)
+					{
+						// Push switch stack
+						SwitchStack stack;
+						switch_stack.push(stack);
+					}
+
+					// Push Switch
+					add_token(Token::KeywordSwitch);
+					break;
+				}
+				case Token::KeywordEndSwitch:
+				{
+					if (target_props.fast_if_else_case)
+					{
+						// Get top of stack
+						if (switch_stack.empty())
+							throw std::runtime_error("Unexpected 'ENDSWITCH' (no 'SWITCH')");
+
+						auto &switch_top = switch_stack.top();
+						
+						// Resolve jumps
+						for (size_t i = 0; i < switch_top.cases.size(); i++)
+						{
+							size_t case_addr = switch_top.cases[i];
+
+							// Set jump to next case
+							if (i != switch_top.cases.size() - 1)
+								set_short_address(case_addr + 2, switch_top.cases[i + 1]);
+							else
+								set_short_address(case_addr + 2, bytecode.size());
+
+							// Set end jump address
+							if (i != 0)
+								set_short_address(case_addr - 2, bytecode.size() + 1);
+						}
+					}
+
+					// Push EndSwitch
+					add_token(Token::KeywordEndSwitch);
+					break;
+				}
+				case Token::KeywordCase:
+				{
+					if (target_props.fast_if_else_case)
+					{
+						// Get top of stack
+						if (switch_stack.empty())
+							throw std::runtime_error("Unexpected 'CASE' (no 'SWITCH')");
+
+						auto &switch_top = switch_stack.top();
+
+						// If this isn't the first case, add a jump to the end
+						if (!switch_top.cases.empty())
+						{
+							add_token(Token::ShortJump);
+							add_short(0);
+						}
+
+						// Push case address
+						switch_top.cases.push_back(bytecode.size());
+
+						// Push Case and short jump
+						add_token(Token::KeywordCase);
+						add_token(Token::ShortJump);
+						add_short(0);
+						break;
+					}
+					else
+					{
+						// Push Case
+						add_token(Token::KeywordCase);
+					}
+					break;
+				}
+				case Token::KeywordIf:
+				{
+					if (target_props.fast_if_else_case)
+					{
+						// Push FastIf
+						short_stack.emplace(ShortStack{ bytecode.size() });
+						add_token(Token::FastIf);
+						add_short(0);
+					}
+					else
+					{
+						// Push If
+						add_token(Token::KeywordIf);
+					}
+					break;
+				}
+				case Token::KeywordElse:
+				{
+					if (target_props.fast_if_else_case)
+					{
+						// Set FastIf jump address
+						if (short_stack.empty())
+							throw std::runtime_error("Unexpected 'ELSE' (no 'IF')");
+
+						auto &if_stack = short_stack.top();
+						if (bytecode[if_stack.address] != (unsigned char)Token::FastIf)
+							throw std::runtime_error("Unexpected 'ELSE' (no 'IF')");
+
+						set_short_address(if_stack.address + 1, bytecode.size() + 3);
+						short_stack.pop();
+
+						// Push FastElse
+						short_stack.emplace(ShortStack{ bytecode.size() });
+						add_token(Token::FastElse);
+						add_short(0);
+					}
+					else
+					{
+						// Push Else
+						add_token(Token::KeywordElse);
+					}
+					break;
+				}
+				case Token::KeywordEndIf:
+				{
+					if (target_props.fast_if_else_case)
+					{
+						// Set FastIf/FastElse jump address
+						if (short_stack.empty())
+							throw std::runtime_error("Unexpected 'ENDIF' (no 'IF' or 'ELSE')");
+
+						auto &if_stack = short_stack.top();
+						if (bytecode[if_stack.address] != (unsigned char)Token::FastIf && bytecode[if_stack.address] != (unsigned char)Token::FastElse)
+							throw std::runtime_error("Unexpected 'ELSE' (no 'IF' or 'ELSE')");
+
+						set_short_address(if_stack.address + 1, bytecode.size() + 1);
+						short_stack.pop();
+					}
+
+					// Push EndIf
+					add_token(Token::KeywordEndIf);
+					break;
+				}
 				case Token::Name:
 				case Token::Arg:
 				{
@@ -404,7 +557,15 @@ namespace QScript
 				}
 			}
 		}
+		g_tokens.clear();
 
+		// Check if stacks are empty
+		if (!random_stack.empty())
+			throw std::runtime_error("Unexpected end of script (missing 'RANDOMEND')");
+		if (!short_stack.empty())
+			throw std::runtime_error("Unexpected end of script (missing 'ENDIF')");
+
+		// Write out checksums
 		for (const auto &checksum : checksums)
 		{
 			add_token(Token::ChecksumName);
@@ -412,9 +573,8 @@ namespace QScript
 			add_string(checksum.second.c_str());
 		}
 
+		// Terminate bytecode
 		add_token(Token::EndOfFile);
-
-		g_tokens.clear();
 		return bytecode;
 	}
 }

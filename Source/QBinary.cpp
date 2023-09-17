@@ -227,9 +227,11 @@ namespace QScript
 				case Token::FastElse:
 				case Token::ShortJump:
 				{
+					/*
 					ptrdiff_t address = GetShortAddress_Relative(p_start, p_end, p_token + 1);
 					if (labels.find(address) == labels.end())
 						labels[address] = "LABEL_" + std::to_string(address) + ":";
+					*/
 					break;
 				}
 				case Token::KeywordRandom:

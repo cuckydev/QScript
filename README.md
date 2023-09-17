@@ -4,6 +4,7 @@ Toolchain for compiling and decompiling Neversoft QScript.
 
 Compiles:
 - Tony Hawk's Underground
+- Tony Hawk's Underground 2
 
 Decompiles:
 - Tony Hawk's Underground
