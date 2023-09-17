@@ -141,30 +141,36 @@ namespace QScript
 				{
 					uint32_t checksum = GetUnsignedInteger(p_start, p_end, p_token + 1);
 					
-					if (is_arg)
-						line << "<";
-					else
-						line << "(";
-
 					auto find = checksum_strings.find(checksum);
 					if (find != checksum_strings.end())
 					{
+						if (is_arg)
+							line << "<";
+
 						// Check if string contains any non identifier characters
 						if (find->second.empty() || (find->second.front() >= '0' && find->second.front() <= '9') || find->second.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_") != std::string::npos)
 							line << "%\"" << find->second << "\"";
 						else 
 							line << find->second;
+
+						if (is_arg)
+							line << ">";
 					}
 					else
 					{
+						if (is_arg)
+							line << "<";
+						else
+							line << "%";
+
 						line << "0x" << std::hex << checksum << std::dec;
 						std::cout << "WARNING: Could not find name for checksum 0x" << std::hex << checksum << std::dec << std::endl;
-					}
 
-					if (is_arg)
-						line << ">";
-					else
-						line << ")";
+						if (is_arg)
+							line << ">";
+						else
+							line << "%";
+					}
 
 					line << " ";
 					is_arg = false;

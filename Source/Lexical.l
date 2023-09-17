@@ -31,15 +31,15 @@ string \"([^\\\"]|\\.)*\"
 local_string \#{string}
 raw_checksum_string %{string}
 
-checksum_string \({raw_checksum_string}\)
+checksum_string {raw_checksum_string}
 arg_checksum_string <{raw_checksum_string}>
 
 raw_identifier {ident_letter}({ident_letter}|{digit_dec})*
-identifier \({raw_identifier}\)
+identifier {raw_identifier}
 arg_identifier <{raw_identifier}>
 
 raw_checksum 0x{digit_hex}+
-checksum \({raw_checksum}\)
+checksum %{raw_checksum}%
 arg_checksum <{raw_checksum}>
 
 label {raw_identifier}:
@@ -71,9 +71,6 @@ label {raw_identifier}:
 
 {checksum}     { QScript::g_tokens.emplace_back(new QScript::TokenNumber(QScript::Token::NameChecksum, yytext + 1, 16, "0x")); }
 {arg_checksum} { QScript::g_tokens.emplace_back(new QScript::TokenNumber(QScript::Token::ArgChecksum, yytext + 1, 16, "0x")); }
-
-{arg_identifier} { QScript::g_tokens.emplace_back(new QScript::TokenString(QScript::Token::Arg, yytext, 1, -1)); }
-{identifier}     { QScript::g_tokens.emplace_back(new QScript::TokenString(QScript::Token::Name, yytext, 1, -1)); }
 
  /* Tokens */
 "{" { QScript::g_tokens.emplace_back(new QScript::TokenBase(QScript::Token::StartStruct)); }
@@ -147,6 +144,10 @@ label {raw_identifier}:
  /* Types */
 "PAIR"   { QScript::g_tokens.emplace_back(new QScript::TokenBase(QScript::Token::Pair)); }
 "VECTOR" { QScript::g_tokens.emplace_back(new QScript::TokenBase(QScript::Token::Vector)); }
+
+ /* Regular identifiers */
+{arg_identifier} { QScript::g_tokens.emplace_back(new QScript::TokenString(QScript::Token::Arg, yytext, 1, -1)); }
+{identifier}     { QScript::g_tokens.emplace_back(new QScript::TokenString(QScript::Token::Name, yytext, 0, 0)); }
 
  /* Newline */
 {newline} { QScript::g_tokens.emplace_back(new QScript::TokenBase(QScript::Token::EndOfLine)); }
