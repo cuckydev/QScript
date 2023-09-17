@@ -210,7 +210,7 @@ namespace QScript
 		if (p_token + 2 > p_end)
 			throw std::runtime_error("[GetShortAddress_Relative] Unexpected end of file");
 		int16_t address = GetSignedShort(p_start, p_end, p_token);
-		return (p_token + 2 + address) - p_start;
+		return (p_token + address) - p_start;
 	}
 
 	std::unordered_map<ptrdiff_t, std::string> GetLabels(char *p_start, char *p_end, char *p_token)
@@ -223,9 +223,11 @@ namespace QScript
 			// Check if this is a token with an address
 			switch ((Token)*p_token)
 			{
-				case Token::Jump:
+				case Token::FastIf:
+				case Token::FastElse:
+				case Token::ShortJump:
 				{
-					ptrdiff_t address = GetAddress_Relative(p_start, p_end, p_token + 1);
+					ptrdiff_t address = GetShortAddress_Relative(p_start, p_end, p_token + 1);
 					if (labels.find(address) == labels.end())
 						labels[address] = "LABEL_" + std::to_string(address) + ":";
 					break;

@@ -63,7 +63,7 @@ namespace QScript
 		KeywordEndScript = 36,
 		KeywordIf = 37,
 		KeywordElse = 38,
-		KeywordElseIf = 39,
+		KeywordElseIf = 39, // Doesn't appear in any qb files
 		KeywordEndIf = 40,
 		KeywordReturn = 41,
 
