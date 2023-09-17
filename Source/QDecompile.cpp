@@ -149,7 +149,11 @@ namespace QScript
 					auto find = checksum_strings.find(checksum);
 					if (find != checksum_strings.end())
 					{
-						line << find->second;
+						// Check if string contains any non identifier characters
+						if (find->second.empty() || (find->second.front() >= '0' && find->second.front() <= '9') || find->second.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_") != std::string::npos)
+							line << "%\"" << find->second << "\"";
+						else 
+							line << find->second;
 					}
 					else
 					{

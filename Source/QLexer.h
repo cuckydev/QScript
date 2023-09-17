@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <cstring>
+#include <iostream>
 
 #include "QToken.h"
 
@@ -145,6 +146,7 @@ namespace QScript
 								// Grab digit
 								int e = ctoi(qpeek());
 								if (e < 0 || e > 15) break;
+								qpop();
 
 								// Push digit to value
 								value = (value << 4) | e;

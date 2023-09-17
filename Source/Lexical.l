@@ -27,12 +27,16 @@ number_dec [-+]?{digit_dec}+
 number_hex [-+]?0x{digit_hex}+
 number_real [+-]?({digit_dec}+([.]{digit_dec}*)?|[.]{digit_dec}+)
 
+string \"([^\\\"]|\\.)*\"
+local_string \#{string}
+raw_checksum_string %{string}
+
+checksum_string \({raw_checksum_string}\)
+arg_checksum_string <{raw_checksum_string}>
+
 raw_identifier {ident_letter}({ident_letter}|{digit_dec})*
 identifier \({raw_identifier}\)
 arg_identifier <{raw_identifier}>
-
-string \"([^\\\"]|\\.)*\"
-local_string \#\"([^\\\"]|\\.)*\"
 
 raw_checksum 0x{digit_hex}+
 checksum \({raw_checksum}\)
@@ -56,6 +60,9 @@ label {raw_identifier}:
 {number_real} { QScript::g_tokens.emplace_back(new QScript::TokenReal(QScript::Token::Float, yytext)); }
 
  /* Strings */
+{arg_checksum_string} { QScript::g_tokens.emplace_back(new QScript::TokenString(QScript::Token::Arg, yytext, 3, -2)); }
+{checksum_string} { QScript::g_tokens.emplace_back(new QScript::TokenString(QScript::Token::Name, yytext, 3, -2)); }
+
 {local_string} { QScript::g_tokens.emplace_back(new QScript::TokenString(QScript::Token::LocalString, yytext, 2, -1)); }
 {string}       { QScript::g_tokens.emplace_back(new QScript::TokenString(QScript::Token::String, yytext, 1, -1)); }
 
@@ -65,10 +72,8 @@ label {raw_identifier}:
 {checksum}     { QScript::g_tokens.emplace_back(new QScript::TokenNumber(QScript::Token::NameChecksum, yytext + 1, 16, "0x")); }
 {arg_checksum} { QScript::g_tokens.emplace_back(new QScript::TokenNumber(QScript::Token::ArgChecksum, yytext + 1, 16, "0x")); }
 
-{identifier} { QScript::g_tokens.emplace_back(new QScript::TokenString(QScript::Token::Name, yytext, 1, -1)); }
-"()"         { QScript::g_tokens.emplace_back(new QScript::TokenString(QScript::Token::Name, "", 0, 0)); }
-
 {arg_identifier} { QScript::g_tokens.emplace_back(new QScript::TokenString(QScript::Token::Arg, yytext, 1, -1)); }
+{identifier}     { QScript::g_tokens.emplace_back(new QScript::TokenString(QScript::Token::Name, yytext, 1, -1)); }
 
  /* Tokens */
 "{" { QScript::g_tokens.emplace_back(new QScript::TokenBase(QScript::Token::StartStruct)); }

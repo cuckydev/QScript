@@ -6,6 +6,7 @@
 #include "QLexer.h"
 #include "QUtil.h"
 
+#include <iostream>
 #include <cmath>
 #include <stdexcept>
 #include <unordered_map>
@@ -274,7 +275,6 @@ namespace QScript
 						add_token(token->type);
 						add_token(Token::ShortJump);
 						add_short(0);
-						break;
 					}
 					else
 					{
