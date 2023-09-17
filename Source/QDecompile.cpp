@@ -411,6 +411,24 @@ namespace QScript
 					line << ": ";
 					break;
 				}
+				case Token::FastIf:
+				{
+					line << "IF ";
+					post_tab_depth++;
+					break;
+				}
+				case Token::FastElse:
+				{
+					line << "ELSE ";
+					tab_depth--;
+					post_tab_depth++;
+					break;
+				}
+				case Token::ShortJump:
+				{
+					line << "SHORTJUMP ";
+					break;
+				}
 				default:
 					break;
 			}

@@ -126,6 +126,13 @@ namespace QScript
 				p_token += 2 * num_jumps + 4 * num_jumps;
 				break;
 			}
+			case Token::FastIf:
+			case Token::FastElse:
+			case Token::ShortJump:
+			{
+				p_token += 3;
+				break;
+			}
 			default:
 			{
 				throw std::runtime_error("[SkipToken] Unrecognized script token " + std::to_string((int)(unsigned char)*p_token) + " at " + std::to_string((int)(p_token - p_start)));

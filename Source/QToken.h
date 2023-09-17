@@ -115,5 +115,9 @@ namespace QScript
 		KeywordRandomPermute = 65,
 
 		Colon = 66,
+
+		FastIf = 71,
+		FastElse = 72,
+		ShortJump = 73,
 	};
 }
