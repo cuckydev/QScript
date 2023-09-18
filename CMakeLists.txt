@@ -33,9 +33,6 @@ if(FLEX_EXECUTABLE)
 		"Source/QLexer.h"
 		"Source/QToken.h"
 		"Source/QUtil.h"
-
-		"${CMAKE_BINARY_DIR}/Include/Lexical/Lexical.cpp"
-		"${CMAKE_BINARY_DIR}/Include/Lexical/Lexical.h"
 	)
 	target_include_directories(QScript.QCompile PRIVATE "Source")
 	target_include_directories(QScript.QCompile PUBLIC "Include")
