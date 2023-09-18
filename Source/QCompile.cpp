@@ -171,8 +171,8 @@ namespace QScript
 		};
 		std::stack<SwitchStack> switch_stack;
 
-		auto &token_it = g_tokens.cbegin();
-		auto &token_end = g_tokens.cend();
+		auto token_it = g_tokens.cbegin();
+		auto token_end = g_tokens.cend();
 
 		auto token_can_pop = [&token_it, &token_end]() -> bool
 			{
