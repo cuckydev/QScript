@@ -38,6 +38,7 @@ if(FLEX_EXECUTABLE)
 	target_include_directories(QScript.QCompile PUBLIC "Include")
 
 	add_dependencies(QScript.QCompile QScript.Lexer)
+	target_sources(QScript.QCompile PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/Include/Lexical/Lexical.cpp ${CMAKE_CURRENT_BINARY_DIR}/Include/Lexical/Lexical.h)
 	target_include_directories(QScript.QCompile PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/Include)
 	
 	# Compile QCompile app
