@@ -61,7 +61,7 @@ label {raw_identifier}:
 
  /* Strings */
 {arg_checksum_string} { QScript::g_tokens.emplace_back(new QScript::TokenString(QScript::Token::Arg, yytext, 3, -2)); }
-{checksum_string} { QScript::g_tokens.emplace_back(new QScript::TokenString(QScript::Token::Name, yytext, 3, -2)); }
+{checksum_string} { QScript::g_tokens.emplace_back(new QScript::TokenString(QScript::Token::Name, yytext, 2, -1)); }
 
 {local_string} { QScript::g_tokens.emplace_back(new QScript::TokenString(QScript::Token::LocalString, yytext, 2, -1)); }
 {string}       { QScript::g_tokens.emplace_back(new QScript::TokenString(QScript::Token::String, yytext, 1, -1)); }
