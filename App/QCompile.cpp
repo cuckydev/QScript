@@ -40,6 +40,11 @@ int main(int argc, char *argv[])
 				target = QScript::Target::THUG1;
 			else if (args["target"] == "thug2")
 				target = QScript::Target::THUG2;
+			else
+			{
+				std::cerr << "Invalid target" << std::endl;
+				return 1;
+			}
 
 			// Compile
 			out = QScript::Compile(buffer.str(), target);

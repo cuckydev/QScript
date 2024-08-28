@@ -149,7 +149,7 @@ namespace QScript
 
 						// Check if string contains any non identifier characters
 						if (find->second.empty() || (find->second.front() >= '0' && find->second.front() <= '9') || find->second.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_") != std::string::npos)
-							line << "%\"" << find->second << "\"";
+							line << "%\"" << EscapeString(find->second) << "\"";
 						else 
 							line << find->second;
 
@@ -223,14 +223,18 @@ namespace QScript
 					float x = GetFloat(p_start, p_end, p_token + 1);
 					float y = GetFloat(p_start, p_end, p_token + 5);
 					float z = GetFloat(p_start, p_end, p_token + 9);
-					line << "VECTOR(" << x << ", " << y << ", " << z << ") ";
+
+					line.precision(std::numeric_limits<float>::max_digits10 + 2);
+					line << std::fixed << "VECTOR(" << x << ", " << y << ", " << z << ") ";
 					break;
 				}
 				case Token::Pair:
 				{
 					float x = GetFloat(p_start, p_end, p_token + 1);
 					float y = GetFloat(p_start, p_end, p_token + 5);
-					line << "PAIR(" << x << ", " << y << ") ";
+
+					line.precision(std::numeric_limits<float>::max_digits10 + 2);
+					line << std::fixed << "PAIR(" << x << ", " << y << ") ";
 					break;
 				}
 				case Token::KeywordBegin:
