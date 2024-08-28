@@ -244,6 +244,8 @@ namespace QScript
 							if (i != 0)
 								set_short_address(case_addr - 2, bytecode.size() + 1);
 						}
+
+						switch_stack.pop();
 					}
 
 					// Push EndSwitch
@@ -561,6 +563,8 @@ namespace QScript
 		g_tokens.clear();
 
 		// Check if stacks are empty
+		if (!switch_stack.empty())
+			throw std::runtime_error("Unexpected end of script (missing 'ENDSWITCH')");
 		if (!random_stack.empty())
 			throw std::runtime_error("Unexpected end of script (missing 'RANDOMEND')");
 		if (!short_stack.empty())
